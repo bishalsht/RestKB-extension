@@ -1,0 +1,16 @@
+module root
+    sort declarations
+	agents :: universe
+	persons :: agents
+
+	things :: universe
+
+	points :: universe
+	
+	areas :: universe
+	
+    function declarations
+        fluents
+	    basic
+		at : things -> points
+		in : things * areas -> booleans

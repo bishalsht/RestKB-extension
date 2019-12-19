@@ -1,0 +1,38 @@
+module bodily_motion	
+    depends on root
+    sort declarations
+        sit :: actions
+            attributes
+                actor : persons
+			
+        stand_up :: actions
+            attributes
+                actor : persons
+			
+    function declarations
+        fluents
+            basic
+                sitting : persons -> booleans
+                seating_exists -> booleans
+                standing : persons -> booleans
+		
+        axioms		
+            occurs(X) causes sitting(Ag) if instance(X, sit),
+                                            actor(X) = Ag.
+
+            occurs(X) causes standing(Ag) if instance(X, stand_up),
+                                             actor(X) = Ag.
+									 
+            false if sitting(Ag), standing(Ag).
+									 
+            impossible occurs(X) if instance(X, sit),
+                                    actor(X) = Ag,
+                                    sitting(Ag).
+
+            impossible occurs(X) if instance(X, sit),
+                                    actor(X) = Ag,
+                                    -seating_exists.							
+
+            impossible occurs(X) if instance(X, stand_up),
+                                    actor(X) = Ag,
+                                    standing(Ag).

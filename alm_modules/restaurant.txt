@@ -1,0 +1,275 @@
+module restaurant
+    depends on motion, bodily_motion, grasping_releasing, communication, eating
+    sort declarations
+	customers, waiters, cooks :: persons
+	bills :: things	
+	restaurants :: areas
+	
+	read_menu :: actions
+	    attributes
+	        actor : persons
+			
+	order :: request
+
+        request_to_prepare :: request
+	
+	pay :: actions
+	    attributes
+	        actor : agents
+	        bill : bills
+			
+	becomes_unavailable :: actions
+	    attributes
+	        dish : foods
+	        restaurant : restaurants
+			
+    object constants
+	t : points
+	m : things
+	b(customers) : bills
+
+        counter, kitchen : points	
+
+    function declarations
+        fluents
+            basic
+                available : foods * restaurants -> booleans
+                served : customers -> booleans
+                has_read_menu : customers -> booleans (was menu_read)
+                bill_generated_for : bills * customers -> booleans
+                paid : bills -> booleans
+            defined
+                satiated_and_out : customers -> booleans
+                ready_to_eat : customers -> booleans
+                done_with_payment : customers -> booleans
+                food_to_request : waiters -> booleans
+                has_bill_to_pick_up : waiters -> booleans
+                served_and_billed : customers -> booleans
+                done_with_request : cooks * waiters -> booleans
+                order_transmitted : customers -> booleans
+                informed_bill : waiters * bills -> booleans
+                bill_generated : bills -> booleans
+                can_read_menu : customers -> booleans
+			
+    axioms
+        false if instance(X, order),
+                 item(X) = Y, 
+                 -instance(Y, foods).
+
+        false if instance(X, request_to_prepare),
+                 actor(X) = A,
+                 -instance(A, waiters).
+
+        false if instance(X, request_to_prepare),
+                 item(X) = T,
+                 -instance(T, foods).
+
+        false if instance(X, request_to_prepare),
+                 recipient(X) = R,
+                 -instance(R, cooks).
+
+        occurs(X) causes paid(B) if instance(X, pay),
+                                    bill(X) = B.
+
+        occurs(X) causes -available(F, R) if instance(X, becomes_unavailable),
+                                             dish(X) = F,
+                                             restaurant(X) = R.                        
+
+        occurs(X) causes 1 { bill_generated_for(B, C) : instance(B, bill) } 1 if instance(X, order),
+                                                                             actor(X) = C.
+					
+        occurs(X) causes at(F) = kitchen if instance(X, prepare),
+                                            dish(X) = F.
+								
+        occurs(X) causes at(bill(C)) = counter if instance(X, order),
+                                                  actor(X) = C.
+
+        served(C) if at(F) = t,
+                     at(C) = t.
+
+        food_to_request(W) if informed(W, F, C).
+
+        satiated_and_out(C) if satiated(C),
+                               at(C) = outside.		
+
+        done_with_payment(C) if bill_generated_for(B, C),
+                                paid(B).
+												   
+        food_ready(F, W) if prepared_food(Ck, F, W).
+	
+        informed_bill(W, B) if informed(W, B, C).
+	
+        has_bill_to_pick_up(W) if informed(W, B, C), 
+                                  instance(B, bills).
+	
+        done_with_request(Ck, W) if prepared_food(Ck, F, W).
+	
+        order_transmitted(C) if informed(W, F, C).
+	
+        served_and_billed(C) if served(C),
+                                bill_generated_for(B, C),
+                                paid(B).
+	
+        served_and_billed(C) if served(C),
+                                bill_generated_for(B, C),
+                                at(B) = t.
+	
+        -informed(W, F1, C) if informed(W, F2, C),
+                               instance(F1, foods),
+                               instance(F2, foods),
+                               F1 != F2.
+
+       ready_to_eat(C) if order_transmitted(C),
+                          hungry(C),
+                          sitting(C).	
+ 
+       bill_generated(B) if bill_generated_for(B, C).
+
+       can_read_menu(C) if at(C) = t,
+                           at(m) = t,
+                           holding(C, m).
+			
+       impossible occurs(X) if instance(X, order),
+                               actor(X) = C,
+                               at(C) != t.
+					
+       impossible occurs(X) if instance(X, order),
+                               recipient(X) = W,
+                               at(W) != t.
+
+       impossible occurs(X) if instance(X, order),
+                               at(m) != t.
+
+       impossible occurs(X) if instance(X, order),
+                               actor(X) = C,
+                               item(X) = F,
+                               in(C, R),
+                               -available(F, R).
+
+       impossible occurs(X) if instance(X, order),
+                               actor(X) = C,
+                               -has_read_menu(C).
+
+       impossible occurs(X) if instance(X, move),
+                               actor(X) = W,
+                               instance(X, waiters),
+                               dest(X) = kitchen,
+                               -food_to_request(W).
+	
+       impossible occurs(X) if instance(X, move),
+                               actor(X) = W,
+                               instance(W, waiters),
+                               dest(X) = counter,
+                               -has_bill_to_pick_up(W).	
+
+       impossible occurs(X) if instance(X, request),
+                               actor(X) = W,
+                               item(X) = F,
+                               -informed_of(W, F).
+
+       impossible occurs(X) if instance(X, request),
+                               recipient(X) = Ck,
+                               at(Ck) != kitchen.
+
+       impossible occurs(X) if instance(X, request),
+                               actor(X) = A,
+                               at(A) != kitchen.
+							
+       impossible occurs(X) if instance(X, prepare),
+                               actor(X) = Ck,
+                               dish(X) = F,
+                               for(X) = W,
+                               prepared_food(Ck, F, W).
+						 
+       impossible occurs(X) if instance(X, prepare),
+                               actor(X) = Ck,
+                               dish(X) = F,
+                               for(X) = W,
+                               -informed(Ck, F, W).
+
+       impossible occurs(X) if instance(X, eat),
+                               dish(X) = F,
+                               at(F) != t.
+
+       impossible occurs(X) if instance(X, eat),
+                               actor(X) = C,
+                               at(C) != t.
+	
+       impossible occurs(X) if instance(X, eat),
+                               actor(X) = C,
+                               -sitting(C).
+
+       impossible occurs(X) if instance(X, eat),
+                               actor(X) = C,
+                               -hungry(C).
+
+       impossible occurs(X) if instance(X, pay),
+                               bill(X) = B,
+                               -bill_generated(B).
+
+       impossible occurs(X) if instance(X, becomes_unavailable),
+                               dish(F),
+                               restaurant(R),
+                               -available(F, R).		
+
+       impossible occurs(X) if instance(X, becomes_unavailable),
+                               holding(P, m).
+	
+       impossible occurs(X) if instance(X, becomes_unavailable),
+                               occurs(Y),
+                               instance(Y, grasp),
+                               object(Y) = m.
+	
+       impossible occurs(X) if instance(X, becomes_unavailable),
+                               occurs(Y),
+                               instance(Y, release),
+                               object(Y) = m.
+
+       impossible occurs(X) if instance(X, lead_to),
+                               actor(X) = C,
+                               dest(X) = t,
+                               in(C, R),
+                               at(C) != entrance(R).
+
+       impossible occurs(X) if instance(X, lead_to),
+                               leader(X) = W,
+                               dest(X) = t,
+                               in(W, R),
+                               at(W) != entrance(R).
+	
+       impossible occurs(X) if instance(X, lead_to),
+                               actor(X) = C,
+                               -welcomed(C).
+
+       impossible occurs(X) if instance(X, leave),
+                               actor(X) = C,
+                               sitting(C).
+
+       impossible occurs(X) if instance(X, grasp),
+                               actor(X) = W,
+                               instance(W, waiters),
+                               object(X) = F,
+                               instance(F, foods),
+                               -food_ready(F, W).
+	
+       impossible occurs(X) if instance(X, grasp),
+                               actor(X) = W,
+                               instance(W, waiters),
+                               object(X) = B,
+                               instance(B, bills),
+                               from(X) = counter,
+                               -informed_bill(W, B).
+
+       impossible occurs(X) if instance(X, greet),
+                               actor(X) = W,
+                               in(W, R),
+                               at(W) != entrance(R).
+
+       impossible occurs(X) if instance(X, greet),
+                               recipient(X) = C,
+                               in(C, R),
+                               at(C) != entrance(R).
+ 
+       impossible occurs(X) if instance(X, read_menu),
+                               actor(X) = C,
+                               -can_read_menu(C).

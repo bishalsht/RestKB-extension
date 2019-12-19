@@ -1,0 +1,105 @@
+module motion
+    depends on root
+    sort declarations
+        move :: actions
+            attributes
+                actor : agents
+                origin : points
+                dest : points
+			
+        enter :: actions
+            attributes
+                actor : agents
+                dest : areas
+			
+        leave :: actions
+            attributes	
+                actor : agents
+                origin : areas
+					
+        lead_to :: move
+            attributes
+                leader : agents
+			
+    object constants
+        outside(areas) : points
+        entrance(areas) : points
+
+    function declarations
+        fluents
+            basic
+                open : areas -> booleans
+        statics
+	    basic
+                connected : points * points -> booleans
+		
+    axioms
+        occurs(X) causes at(Ag) = D if instance(X, move),
+                                       actor(X) = Ag,
+                                       dest(X) = D.	
+									 
+        occurs(X) causes in(Ag, A) if instance(X, enter),
+                                      actor(X) = Ag,
+                                      dest(X) = A.
+								  
+        occurs(X) causes at(Ag) = entrance(A) if instance(X, enter),
+                                                 actor(X) = Ag,
+                                                 dest(X) = A.		
+
+        occurs(X) causes -in(Ag, A) if instance(X, leave),
+                                       actor(X) = Ag,
+                                       origin(X) = A.
+								  
+        occurs(X) causes at(Ag) = outside(A) if instance(X, leave),
+                                                actor(X) = Ag,
+                                                origin(X) = A.	
+
+        occurs(X) causes at(Lead) = D if instance(X, lead_to),
+                                         leader(X) = Lead,
+                                         dest(X) = D.			
+
+        impossible occurs(X) if instance(X, move),
+                                actor(X) = Ag,
+                                origin(X) = O,
+                                at(Ag) != O.
+							
+        impossible occurs(X) if instance(X, move),
+                                actor(X) = Ag,
+                                dest(X) = D,
+                                at(Ag) = D.		
+
+        impossible occurs(X) if instance(X, move),
+                                at(Ag) = O,
+                                dest(X) = D,
+                                -connected(O, D).
+							
+        impossible occurs(X) if instance(X, enter),
+                                actor(X) = Ag,
+                                dest(X) = D,
+                                at(Ag) = D.
+							
+        impossible occurs(X) if instance(X, enter),
+                                actor(X) = Ag,
+                                dest(X) = Area,
+                                at(Ag) != outside(Area).							
+							
+        impossible occurs(X) if instance(X, enter),
+                                dest(X) = D,
+                                -open(D).							
+							
+        impossible occurs(X) if instance(X, leave),
+                                actor(X) = Ag,
+                                origin(X) = O,
+                                at(X) != O.
+
+        impossible occurs(X) if instance(X, leave),
+                                actor(X) = Ag,
+                                dest(X) = Area,
+                                at(Ag) != entrance(Area).							
+				  
+        impossible occurs(X) if instance(X, lead_to),
+                                actor(X) = Ag,
+                                leader(X) = Lead,
+                                at(Ag) = L1,
+                                at(Lead) = L2,
+                                L1 != L2.

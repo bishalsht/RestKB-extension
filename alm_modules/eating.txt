@@ -1,0 +1,44 @@
+module eating
+    depends on root
+    sort declarations
+        foods :: things	
+	
+        eat :: actions
+            attributes
+                actor : agents
+                dish : foods
+			
+        prepare :: actions
+            attributes
+                actor : agents
+                dish : foods
+                for : agents
+	
+    function declarations
+        fluents
+            basic
+                satiated : customers -> booleans
+                prepared_food : agents * foods * agents -> booleans
+            defined
+                food_ready : foods * agents -> booleans
+
+    object constants
+        kitchen : areas
+	
+    axioms
+        occurs(X) causes satiated(A) if instance(X, eat),
+                                        actor(X) = A.
+
+        occcurs(X) causes -dom_at(F) if instance(X, eat),
+                                        dish(X) = F.
+
+        occurs(X) causes prepared_food(A, F, A1) if instance(X, prepare),
+                                                    actor(X) = A,
+                                                    dish(X) = F,
+                                                    for(X) = A1.
+
+        food_ready(F, A1) if prepared_food(A, F, A1).
+
+        impossible occurs(X) if instance(X, prepare),
+                                actor(X) = A,
+                                at(A) != kitchen.

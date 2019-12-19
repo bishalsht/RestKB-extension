@@ -1,0 +1,62 @@
+module communication
+    depends on root
+        sort declarations
+            communicate :: actions
+                attributes
+                    actor : agents
+                    recipient : agents
+
+            greet :: communicate
+			
+            request :: communicate
+                attributes
+                    item : things
+			
+            interference :: actions
+			
+    function declarations
+        fluents
+            basic
+                greeted_by : agents * agents -> booleans
+                informed : agents * things * agents -> booleans
+            defined
+                greeted : agents -> booleans	
+                informed_of : agents * things -> booleans
+
+        statics
+            defined
+                other_item : things * things -> booleans
+
+    axioms
+        occurs(X) causes greeted_by(R, A) if instance(X, greet),
+                                             actor(X) = A,
+                                             recipient(X) = R.
+
+        occurs(X) causes informed(R, T, A) if instance(X, request),
+                                              actor(X) = A,
+                                              item(X) = T,
+                                              recipient(X) = R,
+                                              -occurs(interference).
+
+        occurs(X) causes 1 {informed(R, T1, A) : instance(T1, S)} 1 if instance(X, request),
+                                                                       actor(X) = A,
+                                                                       item(X) = T,
+                                                                       recipient(X) = R,
+                                                                       instance(T, S),
+                                                                       occurs(interference).
+
+        greeted(R) if greeted_by(R, A).
+
+        informed_of(R, T) if informed(R, T, A).
+
+        other_item(T1, T) if instance(T1, S), 
+                             instance(T, S), 
+                             T1 != T,
+                             S != universe.
+
+        impossible occurs(X) if instance(X, communicate),
+                                actor(X) = A,
+                                recipient(X) = R,
+                                at(A) = L1,
+                                at(R) = L2,
+                                L1 != L2.

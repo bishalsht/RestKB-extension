@@ -1,0 +1,76 @@
+module grasping_releasing	
+    depends on root
+    sort declarations
+        grasp :: physical_actions
+            attributes
+                actor : agents
+                object : things
+                from : points
+			
+        release :: physical_actions
+            attributes
+                actor : agents
+                object : things
+
+        put_on :: release
+            attributes
+                on : points
+		
+    function declarations
+        fluents
+	    basic
+                holding : agents * things -> booleans
+                can_reach : agent * things -> booleans
+	
+            defined
+                is_held : things -> booleans
+		
+    axioms	
+        false if instance(X, put_on),
+                 -dom_on(X).
+	
+        occurs(X) causes holding(Ag, T) if instance(X, grasp),
+                                           actor(X) = Ag,
+                                           object(X) = T.
+									   
+        occurs(X) causes -holding(Ag, T) if instance(X, release),
+                                            actor(X) = Ag,
+                                            object(X) = T.		
+
+        occurs(X) causes at(T) = L if instance(X, put_on),
+                                      object(X) = T,
+                                      on(X) = L.	
+									
+        occurs(X) causes at(T) = L if instance(X, release),
+                                      actor(X) = Ag,
+                                      object(X) = T,
+                                      -dom_on(X),
+                                      at(Ag) = L.										
+
+        at(T) = L if holding(Ag, T), 
+                     at(Ag) = L.
+	
+        at(Ag) = L if holding(Ag, T), 
+                      at(T) = L.
+	
+        is_held(T) if holding(Ag, T).									
+
+        impossible occurs(X) if instance(X, grasp),
+                                actor(X) = Ag,
+                                object(X) = T,
+                                holding(Ag, T).
+													
+        impossible occurs(X) if instance(X, grasp),
+                                object(X) = T,
+                                from(X) = L,
+                                at(T) != L.							
+
+        impossible occurs(X) if instance(X, release),
+                                actor(X) = Ag,
+                                object(X) = T,
+                                -holding(Ag, T).
+
+        impossible occurs(X) if instance(X, put_on),
+                                actor(X) = Ag,
+                                on(X) = L,
+                                -can_reach(Ag, L).								
