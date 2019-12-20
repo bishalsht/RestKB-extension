@@ -35,6 +35,10 @@ module motion
                 is_near : points * points -> booleans
                 is_above : points * points -> booleans
                 is_below : points * points -> booleans
+                is_opposite : points * points -> booleans
+                is_opposite : agents * agents -> booleans
+                is_same_plane : agents * agents -> booleans
+                is_same_plane : points * points -> booleans
         statics
 	    basic
                 connected : points * points -> booleans
@@ -120,6 +124,15 @@ module motion
         is_below(X,Y) if is_above(Y,X).
         is_above(X,Y) if is_below(Y,X).
 
+        is_opposite(A,B) if is_opposite(B,A).
+        -is_opposite(A,B) if -is_opposite(B,A).
+
+        -is_above(A,B) if is_same_plane(A,B).
+        -is_below(A,B) if is_same_plane(A,B).
+        -is_same_plane(A,B) if is_above(A,B).
+        -is_same_plane(A,B) if is_below(A,B).
+        is_same_plane(A,B) if is_same_plane(B,A).
+
         occurs(X) causes is_near(A,B) if instance(X,move),
                                         actor(X) = A,
                                         dest(X) = C,
@@ -157,4 +170,40 @@ module motion
                                         dest(X) = D,
                                         at(A) = C,
                                         is_above(C,D).
+                                        
+        occurs(X) causes is_opposite(A,B) if instance(X, move),
+                                        actor(X) = A,
+                                        dest(X) = C,
+                                        at(B) = D,
+                                        is_opposite(C,D).
+                                        
+        occurs(X) causes is_opposite(A,B) if instance(X, move),
+                                        actor(X) = B,
+                                        dest(X) = D,
+                                        at(A) = C,
+                                        is_opposite(C,D).
+
+        occurs(X) causes -is_opposite(A,B) if instance(X, move),
+                                        actor(X) = A,
+                                        dest(X) = C,
+                                        at(B) = D,
+                                        -is_opposite(C,D).
+
+        occurs(X) causes -is_opposite(A,B) if instance(X, move),
+                                        actor(X) = B,
+                                        dest(X) = D,
+                                        at(A) = C,
+                                        -is_opposite(C,D).
+
+        occurs(X) causes is_same_plane(A,B) if instance(X, move),
+                                        actor(X) = A,
+                                        dest(X) = C,
+                                        at(B) = D,
+                                        is_same_plane(C,D).
+
+        occurs(X) causes is_same_plane(A,B) if instance(X, move),
+                                        actor(X) = B,
+                                        dest(X) = D,
+                                        at(B) = C,
+                                        is_same_plane(C,D).
                                         
